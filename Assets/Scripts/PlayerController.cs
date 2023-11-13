@@ -176,29 +176,11 @@ public class PlayerController : NetworkBehaviour
 
         }
     }
-    /*public class ObjectsData : INetworkSerializable
-    {
-        public GameObject[] toast;
-        public List<GameObject> juice;
-        public List<GameObject> cookie;
-        public List<GameObject> donut;
-        public List<GameObject> cake;
-
-        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
-        {
-            serializer.SerializeValue(ref toast);
-
-        }
-    }*/
-
 
     [ServerRpc]
     void CmdCookToastServerRpc(int index)
     {
-        Debug.Log($"Сервер получил: ");
         RpcSetToastActiveClientRpc(index);
-        /*foreach (ulong uid in NetworkManager.Singleton.ConnectedClientsIds)
-            NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(uid).GetComponent<PlayerController>().toast[index].SetActive(true);*/
     }
 
     [ClientRpc]
@@ -209,8 +191,6 @@ public class PlayerController : NetworkBehaviour
         {
             item.gameObject.GetComponent<PlayerController>().toast[index].SetActive(true);
         }
-        Debug.Log($"Клиент получил: ");
-        //this.toast[index].SetActive(true);
     }
 
     async void CookToast()
@@ -221,7 +201,6 @@ public class PlayerController : NetworkBehaviour
             {
                 cookTime = cookTimeToast;
                 await Task.Delay(TimeSpan.FromSeconds(cookTime));
-                //toast[i].SetActive(true);
                 CmdCookToastServerRpc(i);
                 break;
             }
@@ -237,7 +216,11 @@ public class PlayerController : NetworkBehaviour
     [ClientRpc]
     void RpcSetJuiceActiveClientRpc(int index)
     {
-        juice[index].SetActive(true);
+        var players = GameObject.FindGameObjectsWithTag("Player");
+        foreach (var item in players)
+        {
+            item.gameObject.GetComponent<PlayerController>().juice[index].SetActive(true);
+        }
     }
     async void CookJuice()
     {
@@ -247,48 +230,97 @@ public class PlayerController : NetworkBehaviour
             {
                 cookTime = cookTimeJuice;
                 await Task.Delay(TimeSpan.FromSeconds(cookTime));
-                juice[i].SetActive(true);
                 CmdCookJuiceServerRpc(i);
                 break;
             }
         }
     }
+
+    [ServerRpc]
+    void CmdCookCoockieServerRpc(int index)
+    {
+        RpcSetCoockieActiveClientRpc(index);
+    }
+
+    [ClientRpc]
+    void RpcSetCoockieActiveClientRpc(int index)
+    {
+        var players = GameObject.FindGameObjectsWithTag("Player");
+        foreach (var item in players)
+        {
+            item.gameObject.GetComponent<PlayerController>().coockie[index].SetActive(true);
+        }
+    }
+
     async void CookCoockie()
     {
-        foreach (var item in coockie)
+        for (int i = 0; i < coockie.Count; i++)
         {
-            if (!item.activeSelf)
+            if (!coockie[i].activeSelf)
             {
                 cookTime = cookTimeCoockie;
                 await Task.Delay(TimeSpan.FromSeconds(cookTime));
-                item.SetActive(true);
+                CmdCookCoockieServerRpc(i);
                 break;
             }
         }
     }
 
+    [ServerRpc]
+    void CmdCookDonutServerRpc(int index)
+    {
+        RpcSetDonutActiveClientRpc(index);
+    }
+
+    [ClientRpc]
+    void RpcSetDonutActiveClientRpc(int index)
+    {
+        var players = GameObject.FindGameObjectsWithTag("Player");
+        foreach (var item in players)
+        {
+            item.gameObject.GetComponent<PlayerController>().donut[index].SetActive(true);
+        }
+    }
+
     async void CookDonut()
     {
-        foreach (var item in donut)
+        for (int i = 0; i < donut.Count; i++)
         {
-            if (!item.activeSelf)
+            if (!donut[i].activeSelf)
             {
                 cookTime = cookTimeDonut;
                 await Task.Delay(TimeSpan.FromSeconds(cookTime));
-                item.SetActive(true);
+                CmdCookDonutServerRpc(i);
                 break;
             }
         }
     }
+
+    [ServerRpc]
+    void CmdCookCakeServerRpc(int index)
+    {
+        RpcSetCakeActiveClientRpc(index);
+    }
+
+    [ClientRpc]
+    void RpcSetCakeActiveClientRpc(int index)
+    {
+        var players = GameObject.FindGameObjectsWithTag("Player");
+        foreach (var item in players)
+        {
+            item.gameObject.GetComponent<PlayerController>().cake[index].SetActive(true);
+        }
+    }
+
     async void CookCake()
     {
-        foreach (var item in cake)
+        for (int i = 0; i < donut.Count; i++)
         {
-            if (!item.activeSelf)
+            if (!cake[i].activeSelf)
             {
                 cookTime = cookTimeCake;
                 await Task.Delay(TimeSpan.FromSeconds(cookTime));
-                item.SetActive(true);
+                CmdCookCakeServerRpc(i);
                 break;
             }
         }
