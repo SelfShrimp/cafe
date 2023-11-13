@@ -49,6 +49,8 @@ public class PlayerController : NetworkBehaviour
         if (!IsOwner)
             return;
         Camera.main.GetComponent<CamScript>().target = transform;
+        Transform canvas = transform.Find("Canvas");
+        canvas.gameObject.SetActive(true);
         buttons[0].onClick.AddListener(CookToast);
         buttons[1].onClick.AddListener(CookJuice);
         buttons[2].onClick.AddListener(CookCoockie);
@@ -356,6 +358,8 @@ public class PlayerController : NetworkBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        if (!IsOwner)
+            return;
         if (other.tag == "interactionZone")
         {
             Transform interactionPanel = transform.Find("Canvas/interaction");
@@ -365,6 +369,8 @@ public class PlayerController : NetworkBehaviour
 
     private void OnTriggerExit(Collider other)
     {
+        if (!IsOwner)
+            return;
         if (other.tag == "interactionZone")
         {
             transform.Find("Canvas/interaction").gameObject.SetActive(false);

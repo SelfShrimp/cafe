@@ -1,9 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
-public class Buyer : MonoBehaviour
+public class Buyer : NetworkBehaviour
 {
     MeshRenderer mesh;
     //public Player player;
@@ -19,6 +20,8 @@ public class Buyer : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (!IsServer)
+            return;
         if (player == null)
         {
             player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>();
@@ -41,40 +44,56 @@ public class Buyer : MonoBehaviour
                             {
                                 var toast = player.toast;
                                 takeFood(toast);
-                                if (invis > 0f) player.money++;
+                                if (invis > 0f) addMoneyServerRpc(1);
                                 break;
                             }
                         case 1:
                             {
                                 var juice = player.juice;
                                 takeFood(juice);
-                                if (invis > 0f) player.money++;
+                                if (invis > 0f) addMoneyServerRpc(1);
                                 break;
                             }
                         case 2:
                             {
                                 var coockie = player.coockie;
                                 takeFood(coockie);
-                                if (invis > 0f) player.money += 2;
+                                if (invis > 0f) addMoneyServerRpc(2);
                                 break;
                             }
                         case 3:
                             {
                                 var donut = player.donut;
                                 takeFood(donut);
-                                if (invis > 0f) player.money += 3;
+                                if (invis > 0f) addMoneyServerRpc(3);
                                 break;
                             }
                         case 4:
                             {
                                 var cake = player.cake;
                                 takeFood(cake);
-                                if (invis > 0f) player.money += 3;
+                                if (invis > 0f) addMoneyServerRpc(3);
                                 break;
                             }
                     }
                 }
             }
+        }
+    }
+
+    [ServerRpc]
+    void addMoneyServerRpc(short money)
+    {
+        addMoneyClientRpc(money);
+    }
+
+    [ClientRpc]
+    void addMoneyClientRpc(short money)
+    {
+        var players = GameObject.FindGameObjectsWithTag("Player");
+        foreach (var item in players)
+        {
+            item.GetComponent<PlayerController>().money += money;
         }
     }
 
