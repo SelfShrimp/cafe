@@ -13,7 +13,8 @@ using UnityEngine.UI;
 public class PlayerController : NetworkBehaviour
 {
     private CharacterController controller;
-    private float speed = 2.0F;
+    private float speed = 25.0F;
+    private float speedRL = 25.0f;
     private float gravity = 20.0F;
     float sensitivity = 2.0f;
     private Vector3 moveDirection = Vector3.zero;
@@ -39,6 +40,9 @@ public class PlayerController : NetworkBehaviour
 
     public bool iAmServer = false;
 
+    FixedJoystick moveJoystick;
+    FixedJoystick rotateJoystick;
+
     private void Awake()
     {
         controller = GetComponent<CharacterController>();
@@ -51,6 +55,8 @@ public class PlayerController : NetworkBehaviour
         Camera.main.GetComponent<CamScript>().target = transform;
         Transform canvas = transform.Find("Canvas");
         canvas.gameObject.SetActive(true);
+        moveJoystick = transform.Find("Canvas/MoveJoystick").GetComponent<FixedJoystick>();
+        rotateJoystick = transform.Find("Canvas/RotateJoystick").GetComponent<FixedJoystick>();
         buttons[0].onClick.AddListener(CookToast);
         buttons[1].onClick.AddListener(CookJuice);
         buttons[2].onClick.AddListener(CookCoockie);
@@ -129,10 +135,11 @@ public class PlayerController : NetworkBehaviour
         {
             isRotating = false;
         }
-        if (isRotating)
+        if (isRotating || rotateJoystick.Direction.x != 0)
         {
             float mouseX = Input.GetAxis("Mouse X") * sensitivity;
             transform.Rotate(0, mouseX, 0);
+            transform.Rotate(0, rotateJoystick.Direction.x, 0);
         }
 
         if (cookTime <= 0f)
@@ -141,7 +148,8 @@ public class PlayerController : NetworkBehaviour
             transform.Find("Canvas/menu/waitTime").gameObject.GetComponent<TMP_Text>().SetText("Wait " + (int)cookTime + "s");
             if (controller.isGrounded)
             {
-                moveDirection = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
+                //moveDirection = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
+                moveDirection = new Vector3(speed * moveJoystick.Direction.x * Time.deltaTime, 0, moveJoystick.Direction.y * speedRL * Time.deltaTime);
                 moveDirection = transform.TransformDirection(moveDirection);
                 moveDirection *= speed;
             }
