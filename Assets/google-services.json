@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "47422463485",
+    "project_id": "cafe-selfshimp",
+    "storage_bucket": "cafe-selfshimp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:47422463485:android:c679a5ed1299a1f48c4d94",
+        "android_client_info": {
+          "package_name": "com.SelfShrimp.Cafe"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC7GHJEU3qfK1ON5DqBsJEGoI5lGJd5FNk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

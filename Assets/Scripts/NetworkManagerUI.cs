@@ -13,6 +13,7 @@ public class NetworkManagerUI : NetworkBehaviour
 
     private void Awake()
     {
+        DontDestroyOnLoad(transform.gameObject);
         btn_Server.onClick.AddListener(() =>
         {
             NetworkManager.Singleton.StartHost();

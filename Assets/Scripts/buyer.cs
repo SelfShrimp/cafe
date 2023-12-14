@@ -14,14 +14,15 @@ public class Buyer : NetworkBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        DontDestroyOnLoad(transform.gameObject);
         mesh = GetComponent<MeshRenderer>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (!IsServer)
-            return;
+        /*if (!IsServer)
+            return;*/
         if (player == null)
         {
             player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>();
@@ -44,35 +45,35 @@ public class Buyer : NetworkBehaviour
                             {
                                 var toast = player.toast;
                                 takeFood(toast);
-                                if (invis > 0f) addMoneyServerRpc(1);
+                                if (invis > 0f) addMoneyServer(1);
                                 break;
                             }
                         case 1:
                             {
                                 var juice = player.juice;
                                 takeFood(juice);
-                                if (invis > 0f) addMoneyServerRpc(1);
+                                if (invis > 0f) addMoneyServer(1);
                                 break;
                             }
                         case 2:
                             {
                                 var coockie = player.coockie;
                                 takeFood(coockie);
-                                if (invis > 0f) addMoneyServerRpc(2);
+                                if (invis > 0f) addMoneyServer(2);
                                 break;
                             }
                         case 3:
                             {
                                 var donut = player.donut;
                                 takeFood(donut);
-                                if (invis > 0f) addMoneyServerRpc(3);
+                                if (invis > 0f) addMoneyServer(3);
                                 break;
                             }
                         case 4:
                             {
                                 var cake = player.cake;
                                 takeFood(cake);
-                                if (invis > 0f) addMoneyServerRpc(3);
+                                if (invis > 0f) addMoneyServer(3);
                                 break;
                             }
                     }
@@ -81,14 +82,14 @@ public class Buyer : NetworkBehaviour
         }
     }
 
-    [ServerRpc]
-    void addMoneyServerRpc(short money)
+    //[Server]
+    void addMoneyServer(short money)
     {
-        addMoneyClientRpc(money);
+        addMoneyClient(money);
     }
 
-    [ClientRpc]
-    void addMoneyClientRpc(short money)
+    //[Client]
+    void addMoneyClient(short money)
     {
         var players = GameObject.FindGameObjectsWithTag("Player");
         foreach (var item in players)

@@ -13,8 +13,8 @@ using UnityEngine.UI;
 public class PlayerController : NetworkBehaviour
 {
     private CharacterController controller;
-    private float speed = 25.0F;
-    private float speedRL = 25.0f;
+    private float speed = 10.0F;
+    private float speedRL = 10.0f;
     private float gravity = 20.0F;
     float sensitivity = 2.0f;
     private Vector3 moveDirection = Vector3.zero;
@@ -27,6 +27,7 @@ public class PlayerController : NetworkBehaviour
 
     Rigidbody rb;
     public Button[] buttons;
+    public Button pressF;
     public List<GameObject> toast;
     public List<GameObject> juice;
     public List<GameObject> coockie;
@@ -45,18 +46,21 @@ public class PlayerController : NetworkBehaviour
 
     private void Awake()
     {
+        DontDestroyOnLoad(transform.gameObject);
         controller = GetComponent<CharacterController>();
     }
 
     private void Start()
     {
-        if (!IsOwner)
-            return;
+        /*if (!IsOwner)
+            return;*/
         Camera.main.GetComponent<CamScript>().target = transform;
         Transform canvas = transform.Find("Canvas");
         canvas.gameObject.SetActive(true);
         moveJoystick = transform.Find("Canvas/MoveJoystick").GetComponent<FixedJoystick>();
         rotateJoystick = transform.Find("Canvas/RotateJoystick").GetComponent<FixedJoystick>();
+        pressF = transform.Find("Canvas/interaction").GetComponent<Button>();
+        pressF.onClick.AddListener(interactionFunc);
         buttons[0].onClick.AddListener(CookToast);
         buttons[1].onClick.AddListener(CookJuice);
         buttons[2].onClick.AddListener(CookCoockie);
@@ -115,8 +119,8 @@ public class PlayerController : NetworkBehaviour
 
     private void Update()
     {
-        if (!IsOwner)
-            return;
+        /*if (!IsOwner)
+            return;*/
         if (cookTime >= 0f)
         {
             cookTime -= Time.deltaTime;
@@ -157,16 +161,7 @@ public class PlayerController : NetworkBehaviour
             controller.Move(moveDirection * Time.deltaTime);
             if (Input.GetKeyDown(KeyCode.F))
             {
-                if (transform.Find("Canvas/interaction").gameObject.activeSelf)
-                {
-                    transform.Find("Canvas/interaction").gameObject.SetActive(false);
-                    transform.Find("Canvas/menu").gameObject.SetActive(true);
-                }
-                else if (transform.Find("Canvas/menu").gameObject.activeSelf)
-                {
-                    transform.Find("Canvas/interaction").gameObject.SetActive(true);
-                    transform.Find("Canvas/menu").gameObject.SetActive(false);
-                }
+                interactionFunc();
             }
         }
         else
@@ -187,14 +182,28 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
-    [ServerRpc]
-    void CmdCookToastServerRpc(int index)
+    private void interactionFunc()
     {
-        RpcSetToastActiveClientRpc(index);
+        if (transform.Find("Canvas/interaction").gameObject.activeSelf)
+        {
+            transform.Find("Canvas/interaction").gameObject.SetActive(false);
+            transform.Find("Canvas/menu").gameObject.SetActive(true);
+        }
+        else if (transform.Find("Canvas/menu").gameObject.activeSelf)
+        {
+            transform.Find("Canvas/interaction").gameObject.SetActive(true);
+            transform.Find("Canvas/menu").gameObject.SetActive(false);
+        }
     }
 
-    [ClientRpc]
-    void RpcSetToastActiveClientRpc(int index)
+    //[Server]
+    void CmdCookToastServer(int index)
+    {
+        SetToastActiveClient(index);
+    }
+
+    //[Client]
+    void SetToastActiveClient(int index)
     {
         var players = GameObject.FindGameObjectsWithTag("Player");
         foreach( var item in players) 
@@ -209,22 +218,27 @@ public class PlayerController : NetworkBehaviour
         {
             if (!toast[i].activeSelf)
             {
+                Firebase.Analytics.FirebaseAnalytics.LogEvent(
+                Firebase.Analytics.FirebaseAnalytics.EventJoinGroup,
+                Firebase.Analytics.FirebaseAnalytics.ParameterGroupId,
+                "cook_toast"
+                );
                 cookTime = cookTimeToast;
                 await Task.Delay(TimeSpan.FromSeconds(cookTime));
-                CmdCookToastServerRpc(i);
+                CmdCookToastServer(i);
                 break;
             }
         }
     }
 
-    [ServerRpc]
-    void CmdCookJuiceServerRpc(int index)
+    //[Server]
+    void CmdCookJuiceServer(int index)
     {
-        RpcSetJuiceActiveClientRpc(index);
+        SetJuiceActiveClient(index);
     }
 
-    [ClientRpc]
-    void RpcSetJuiceActiveClientRpc(int index)
+    //[Client]
+    void SetJuiceActiveClient(int index)
     {
         var players = GameObject.FindGameObjectsWithTag("Player");
         foreach (var item in players)
@@ -238,22 +252,27 @@ public class PlayerController : NetworkBehaviour
         {
             if (!juice[i].activeSelf)
             {
+                Firebase.Analytics.FirebaseAnalytics.LogEvent(
+                Firebase.Analytics.FirebaseAnalytics.EventJoinGroup,
+                Firebase.Analytics.FirebaseAnalytics.ParameterGroupId,
+                "cook_juice"
+                );
                 cookTime = cookTimeJuice;
                 await Task.Delay(TimeSpan.FromSeconds(cookTime));
-                CmdCookJuiceServerRpc(i);
+                CmdCookJuiceServer(i);
                 break;
             }
         }
     }
 
-    [ServerRpc]
-    void CmdCookCoockieServerRpc(int index)
+    //[Server]
+    void CmdCookCoockieServer(int index)
     {
-        RpcSetCoockieActiveClientRpc(index);
+        SetCoockieActiveClient(index);
     }
 
-    [ClientRpc]
-    void RpcSetCoockieActiveClientRpc(int index)
+    //[Client]
+    void SetCoockieActiveClient(int index)
     {
         var players = GameObject.FindGameObjectsWithTag("Player");
         foreach (var item in players)
@@ -268,22 +287,27 @@ public class PlayerController : NetworkBehaviour
         {
             if (!coockie[i].activeSelf)
             {
+                Firebase.Analytics.FirebaseAnalytics.LogEvent(
+                Firebase.Analytics.FirebaseAnalytics.EventJoinGroup,
+                Firebase.Analytics.FirebaseAnalytics.ParameterGroupId,
+                "cook_coockie"
+                );
                 cookTime = cookTimeCoockie;
                 await Task.Delay(TimeSpan.FromSeconds(cookTime));
-                CmdCookCoockieServerRpc(i);
+                CmdCookCoockieServer(i);
                 break;
             }
         }
     }
 
-    [ServerRpc]
-    void CmdCookDonutServerRpc(int index)
+    //[Server]
+    void CmdCookDonutServer(int index)
     {
-        RpcSetDonutActiveClientRpc(index);
+        SetDonutActiveClient(index);
     }
 
-    [ClientRpc]
-    void RpcSetDonutActiveClientRpc(int index)
+    //[Client]
+    void SetDonutActiveClient(int index)
     {
         var players = GameObject.FindGameObjectsWithTag("Player");
         foreach (var item in players)
@@ -298,22 +322,27 @@ public class PlayerController : NetworkBehaviour
         {
             if (!donut[i].activeSelf)
             {
+                Firebase.Analytics.FirebaseAnalytics.LogEvent(
+                Firebase.Analytics.FirebaseAnalytics.EventJoinGroup,
+                Firebase.Analytics.FirebaseAnalytics.ParameterGroupId,
+                "cook_donut"
+                );
                 cookTime = cookTimeDonut;
                 await Task.Delay(TimeSpan.FromSeconds(cookTime));
-                CmdCookDonutServerRpc(i);
+                CmdCookDonutServer(i);
                 break;
             }
         }
     }
 
-    [ServerRpc]
-    void CmdCookCakeServerRpc(int index)
+    //[Server]
+    void CmdCookCakeServer(int index)
     {
-        RpcSetCakeActiveClientRpc(index);
+        SetCakeActiveClient(index);
     }
 
-    [ClientRpc]
-    void RpcSetCakeActiveClientRpc(int index)
+    //[Client]
+    void SetCakeActiveClient(int index)
     {
         var players = GameObject.FindGameObjectsWithTag("Player");
         foreach (var item in players)
@@ -324,13 +353,18 @@ public class PlayerController : NetworkBehaviour
 
     async void CookCake()
     {
-        for (int i = 0; i < donut.Count; i++)
+        for (int i = 0; i < cake.Count; i++)
         {
             if (!cake[i].activeSelf)
             {
+                Firebase.Analytics.FirebaseAnalytics.LogEvent(
+                Firebase.Analytics.FirebaseAnalytics.EventJoinGroup,
+                Firebase.Analytics.FirebaseAnalytics.ParameterGroupId,
+                "cook_cake"
+                );
                 cookTime = cookTimeCake;
                 await Task.Delay(TimeSpan.FromSeconds(cookTime));
-                CmdCookCakeServerRpc(i);
+                CmdCookCakeServer(i);
                 break;
             }
         }
@@ -343,6 +377,11 @@ public class PlayerController : NetworkBehaviour
             money -= 5;
             buttons[2].interactable = true;
             buttons[5].interactable = false;
+            Firebase.Analytics.FirebaseAnalytics.LogEvent(
+                Firebase.Analytics.FirebaseAnalytics.EventJoinGroup,
+                Firebase.Analytics.FirebaseAnalytics.ParameterGroupId,
+                "add_coockie"
+                );
         }
     }
     void AddDonut()
@@ -352,6 +391,11 @@ public class PlayerController : NetworkBehaviour
             money -= 10;
             buttons[3].interactable = true;
             buttons[6].interactable = false;
+            Firebase.Analytics.FirebaseAnalytics.LogEvent(
+                Firebase.Analytics.FirebaseAnalytics.EventJoinGroup,
+                Firebase.Analytics.FirebaseAnalytics.ParameterGroupId,
+                "add_donut"
+                );
         }
     }
     void AddCake()
@@ -361,13 +405,18 @@ public class PlayerController : NetworkBehaviour
             money -= 10;
             buttons[4].interactable = true;
             buttons[7].interactable = false;
+            Firebase.Analytics.FirebaseAnalytics.LogEvent(
+                Firebase.Analytics.FirebaseAnalytics.EventJoinGroup,
+                Firebase.Analytics.FirebaseAnalytics.ParameterGroupId,
+                "add_cake"
+                );
         }
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!IsOwner)
-            return;
+        /*if (!IsOwner)
+            return;*/
         if (other.tag == "interactionZone")
         {
             Transform interactionPanel = transform.Find("Canvas/interaction");
@@ -377,12 +426,13 @@ public class PlayerController : NetworkBehaviour
 
     private void OnTriggerExit(Collider other)
     {
-        if (!IsOwner)
-            return;
+        /*if (!IsOwner)
+            return;*/
         if (other.tag == "interactionZone")
         {
             transform.Find("Canvas/interaction").gameObject.SetActive(false);
             transform.Find("Canvas/menu").gameObject.SetActive(false);
+            throw new System.Exception("test exception, exit from zone");
         }
     }
 }
